@@ -1,0 +1,6 @@
+{
+  "name": "Rt. Hon. Adewale Egbedun Campaign Platform | Odo-Otin 2027",
+  "description": "Official re-election campaign platform for Rt. Hon. Adewale Egbedun, Speaker of Osun State House of Assembly representing Odo-Otin State Constituency. Continuity, Progress, Development.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
