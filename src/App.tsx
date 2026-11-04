@@ -7,7 +7,6 @@ import { BiographyPage } from './pages/BiographyPage';
 import { ManifestoPage } from './pages/ManifestoPage';
 import { ProjectsPage } from './pages/ProjectsPage';
 import { GalleryPage } from './pages/GalleryPage';
-import { BlogPage } from './pages/BlogPage';
 import { VolunteerContactPage } from './pages/VolunteerContactPage';
 import { AdminDashboard } from './pages/AdminDashboard';
 import { ProjectDetailModal } from './components/common/ProjectDetailModal';
@@ -27,7 +26,6 @@ const AppContent: React.FC = () => {
         {currentPage === 'manifesto' && <ManifestoPage />}
         {currentPage === 'projects' && <ProjectsPage />}
         {currentPage === 'gallery' && <GalleryPage />}
-        {currentPage === 'blog' && <BlogPage />}
         {currentPage === 'volunteer' && <VolunteerContactPage />}
         {currentPage === 'admin' && <AdminDashboard />}
       </main>

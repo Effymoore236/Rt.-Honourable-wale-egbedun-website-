@@ -33,10 +33,12 @@ export const ProjectsPage: React.FC = () => {
     'Roads & Infrastructure',
     'Healthcare & Wellness',
     'Education & Schools',
-    'Water & Sanitation',
     'Rural Electrification & Solar',
+    'Youth & Women Empowerment',
     'Agriculture & Markets',
-    'Youth & Women Empowerment'
+    'Constituent Welfare & Support',
+    'Traditional Institutions & Peace',
+    'Water & Sanitation'
   ];
 
   const statuses = ['All', 'Completed', 'Ongoing', 'Planned'];
@@ -92,11 +94,11 @@ export const ProjectsPage: React.FC = () => {
             </span>
           </div>
           <h1 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-stone-950 tracking-tight font-display">
-            Constituency Projects & Interventions
+            Constituency Interventions & Accomplishments
           </h1>
           <p className="text-base text-stone-600 mt-2 max-w-3xl">
-            Evidence-based documentation of infrastructure, healthcare facilities, schools, 
-            water boreholes, and economic empowerments delivered by Rt. Hon. Adewale Egbedun across all 16 communities of Odo-Otin.
+            A comprehensive record of real, verifiable constituency accomplishments and grassroots interventions 
+            delivered by Rt. Hon. Adewale Egbedun since assuming office in 2023 across Odo-Otin State Constituency.
           </p>
         </div>
 
@@ -127,28 +129,9 @@ export const ProjectsPage: React.FC = () => {
           </div>
 
           {/* Dropdown Filters Grid */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 text-xs">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
             
-            {/* 1. Community Dropdown (all 16 communities!) */}
-            <div>
-              <label className="block font-semibold text-stone-700 mb-1">
-                Filter by Community ({ODO_OTIN_COMMUNITIES.length} Towns)
-              </label>
-              <select
-                value={selectedTownFilter}
-                onChange={(e) => setSelectedTownFilter(e.target.value as OdoOtinCommunity | 'All')}
-                className="w-full px-3 py-2.5 min-h-[44px] rounded-xl bg-white border border-stone-300 text-stone-900 text-base sm:text-xs font-medium focus:outline-hidden focus:border-emerald-600"
-              >
-                <option value="All">All 16 Communities</option>
-                {ODO_OTIN_COMMUNITIES.map((comm) => (
-                  <option key={comm} value={comm}>
-                    {comm}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            {/* 2. Project Category Dropdown */}
+            {/* 1. Project Category Dropdown */}
             <div>
               <label className="block font-semibold text-stone-700 mb-1">
                 Project Category / Sector
@@ -166,7 +149,7 @@ export const ProjectsPage: React.FC = () => {
               </select>
             </div>
 
-            {/* 3. Status Dropdown */}
+            {/* 2. Status Dropdown */}
             <div>
               <label className="block font-semibold text-stone-700 mb-1">
                 Execution Status
@@ -184,10 +167,10 @@ export const ProjectsPage: React.FC = () => {
               </select>
             </div>
 
-            {/* 4. Year Dropdown */}
+            {/* 3. Year Dropdown */}
             <div>
               <label className="block font-semibold text-stone-700 mb-1">
-                Budget / Completion Year
+                Year of Delivery / Implementation
               </label>
               <select
                 value={selectedYear}
@@ -207,15 +190,15 @@ export const ProjectsPage: React.FC = () => {
           <div className="flex flex-wrap items-center gap-2 pt-1 text-[11px] text-stone-500">
             <span>Active selection:</span>
             <span className="font-semibold text-stone-800">
-              Community: {selectedTownFilter}
+              Sector: {selectedCategory}
             </span>
             <span>·</span>
             <span className="font-semibold text-stone-800">
-              Category: {selectedCategory}
+              Status: {selectedStatus}
             </span>
             <span>·</span>
             <span className="font-semibold text-stone-800">
-              Showing {filteredProjects.length} of {projects.length} recorded projects
+              Showing {filteredProjects.length} of {projects.length} recorded interventions
             </span>
           </div>
         </div>
@@ -283,7 +266,7 @@ export const ProjectsPage: React.FC = () => {
                     className="w-full py-2.5 px-4 rounded-lg bg-white border border-stone-300 hover:border-amber-400 hover:bg-amber-50 text-stone-900 font-semibold text-xs transition-colors flex items-center justify-center gap-1.5 cursor-pointer"
                   >
                     <Eye className="w-3.5 h-3.5 text-amber-600" />
-                    <span>View Project Evidence & Details</span>
+                    <span>View Project Details</span>
                   </button>
                 </div>
               </div>

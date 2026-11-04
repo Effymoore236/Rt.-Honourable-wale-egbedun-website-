@@ -107,7 +107,7 @@ export const ProjectsCarousel: React.FC = () => {
                   className="w-full py-2.5 px-4 rounded-lg bg-white border border-stone-300 hover:border-amber-400 hover:bg-amber-50 text-stone-900 font-semibold text-xs transition-colors flex items-center justify-center gap-1.5 cursor-pointer"
                 >
                   <Eye className="w-3.5 h-3.5 text-amber-600" />
-                  <span>View Project Evidence & Details</span>
+                  <span>View Project Details</span>
                 </button>
               </div>
             </div>
@@ -120,7 +120,7 @@ export const ProjectsCarousel: React.FC = () => {
             onClick={() => { setCurrentPage('projects'); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
             className="inline-flex items-center gap-2 px-6 py-3 rounded-lg bg-stone-900 hover:bg-stone-800 text-white font-semibold text-xs shadow-xs transition-colors cursor-pointer"
           >
-            <span>Explore All 42+ Constituency Projects & Filter by Community</span>
+            <span>Explore All 26 Verified Interventions & Accomplishments</span>
             <ArrowRight className="w-4 h-4 text-amber-400" />
           </button>
         </div>

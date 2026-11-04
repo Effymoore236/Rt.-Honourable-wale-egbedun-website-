@@ -22,8 +22,8 @@ export const Footer: React.FC = () => {
       <div className="h-1 w-full bg-gradient-to-r from-emerald-600 via-amber-400 to-red-600" />
 
       {/* Main Footer Content */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-10">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 sm:py-12">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 lg:gap-12">
           {/* Column 1: Candidate & Accord Party */}
           <div className="space-y-4">
             <div className="flex items-center gap-4">
@@ -53,86 +53,12 @@ export const Footer: React.FC = () => {
             </div>
           </div>
 
-          {/* Column 2: Navigation Links */}
-          <div className="space-y-3">
-            <h4 className="text-sm font-semibold text-white uppercase tracking-wider">
-              Quick Navigation
-            </h4>
-            <ul className="space-y-2 text-xs">
-              <li>
-                <button
-                  onClick={() => { setCurrentPage('home'); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
-                  className="hover:text-amber-400 transition-colors cursor-pointer"
-                >
-                  Campaign Home
-                </button>
-              </li>
-              <li>
-                <button
-                  onClick={() => { setCurrentPage('biography'); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
-                  className="hover:text-amber-400 transition-colors cursor-pointer"
-                >
-                  Biography & Leadership Journey
-                </button>
-              </li>
-              <li>
-                <button
-                  onClick={() => { setCurrentPage('manifesto'); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
-                  className="hover:text-amber-400 transition-colors cursor-pointer"
-                >
-                  2027–2031 Manifesto (8 Pillars)
-                </button>
-              </li>
-              <li>
-                <button
-                  onClick={() => { setCurrentPage('projects'); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
-                  className="hover:text-amber-400 transition-colors cursor-pointer"
-                >
-                  Documented Constituency Projects
-                </button>
-              </li>
-              <li>
-                <button
-                  onClick={() => { setCurrentPage('gallery'); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
-                  className="hover:text-amber-400 transition-colors cursor-pointer"
-                >
-                  Campaign & Duty Photo Gallery
-                </button>
-              </li>
-              <li>
-                <button
-                  onClick={() => { setCurrentPage('blog'); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
-                  className="hover:text-amber-400 transition-colors cursor-pointer"
-                >
-                  Legislative & Community Bulletins
-                </button>
-              </li>
-              <li>
-                <button
-                  onClick={() => { setCurrentPage('admin'); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
-                  className="hover:text-amber-400 transition-colors cursor-pointer text-stone-400 inline-flex items-center gap-1.5"
-                >
-                  <Lock className="w-3 h-3 text-amber-400" />
-                  <span>Campaign Admin Portal</span>
-                </button>
-              </li>
-              <li>
-                <button
-                  onClick={() => { setCurrentPage('volunteer'); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
-                  className="hover:text-amber-400 transition-colors cursor-pointer"
-                >
-                  Volunteer Registration & Pledge Card
-                </button>
-              </li>
-            </ul>
-          </div>
-
-          {/* Column 3: Contact & Campaign Secretariat */}
-          <div className="space-y-3">
+          {/* Column 2: Contact & Campaign Secretariat */}
+          <div className="space-y-4">
             <h4 className="text-sm font-semibold text-white uppercase tracking-wider">
               Campaign Secretariat
             </h4>
-            <div className="space-y-2.5 text-xs text-stone-400">
+            <div className="space-y-3 text-xs text-stone-400">
               <div className="flex items-start gap-2.5">
                 <MapPin className="w-4 h-4 text-amber-400 shrink-0 mt-0.5" />
                 <span>{settings.campaignOfficeAddress}</span>
@@ -163,12 +89,12 @@ export const Footer: React.FC = () => {
             </div>
           </div>
 
-          {/* Column 4: Newsletter & Engagement */}
-          <div className="space-y-3">
+          {/* Column 3: Newsletter & Engagement */}
+          <div className="space-y-4">
             <h4 className="text-sm font-semibold text-white uppercase tracking-wider">
               Stay Informed
             </h4>
-            <p className="text-xs text-stone-400">
+            <p className="text-xs text-stone-400 leading-relaxed">
               Subscribe to official campaign bulletins, town hall alerts, and legislative reports from Speaker Egbedun.
             </p>
             <form onSubmit={handleSubscribe} className="space-y-2">
@@ -184,7 +110,7 @@ export const Footer: React.FC = () => {
                 <button
                   type="submit"
                   aria-label="Subscribe to newsletter"
-                  className="absolute right-1.5 top-1.5 p-1.5 rounded-md bg-emerald-600 text-white hover:bg-emerald-500 transition-colors"
+                  className="absolute right-1.5 top-1.5 p-1.5 rounded-md bg-emerald-600 text-white hover:bg-emerald-500 transition-colors cursor-pointer"
                 >
                   <Send className="w-3.5 h-3.5" />
                 </button>

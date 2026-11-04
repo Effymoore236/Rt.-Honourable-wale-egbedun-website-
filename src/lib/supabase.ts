@@ -1,23 +1,103 @@
 import { createClient } from '@supabase/supabase-js';
 
-// Environment variables for Supabase
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || '';
-const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || '';
+// Safe environment variable resolution (works in Vite, Node, and test runners)
+const getEnvVar = (key: string, fallback: string = ''): string => {
+  try {
+    if (typeof import.meta !== 'undefined' && (import.meta as any)?.env?.[key]) {
+      return (import.meta as any).env[key];
+    }
+  } catch {
+    // ignore
+  }
+  try {
+    if (typeof process !== 'undefined' && process.env?.[key]) {
+      return process.env[key] as string;
+    }
+  } catch {
+    // ignore
+  }
+  return fallback;
+};
+
+const defaultUrl = 'https://shmxekngdxrjsdemjhsj.supabase.co';
+const defaultKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNobXhla25nZHhyanNkZW1qaHNqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTA1NTczOTYsImV4cCI6MjEwNjEzMzM5Nn0.Avo4BBV4rMoqKbJIfadiLoiucWeHW3kQUxTubMxh9cI';
+
+const rawUrl = getEnvVar('VITE_SUPABASE_URL', defaultUrl);
+const rawKey = getEnvVar('VITE_SUPABASE_ANON_KEY', defaultKey);
+
+// Normalize URL: Strip any trailing /rest/v1/ or trailing slashes so supabase-js client builds endpoints cleanly
+export const supabaseUrl = rawUrl
+  ? rawUrl.trim().replace(/\/rest\/v1\/?$/, '').replace(/\/+$/, '')
+  : '';
+
+export const supabaseAnonKey = rawKey ? rawKey.trim() : '';
 
 export const isSupabaseConfigured = Boolean(
-  supabaseUrl && 
-  supabaseAnonKey && 
-  supabaseUrl !== 'https://shmxekngdxrjsdemjhsj.supabase.co/rest/v1/' &&
-  supabaseAnonKey !== 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNobXhla25nZHhyanNkZW1qaHNqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTA1NTczOTYsImV4cCI6MjEwNjEzMzM5Nn0.Avo4BBV4rMoqKbJIfadiLoiucWeHW3kQUxTubMxh9cI'
+  supabaseUrl &&
+  supabaseAnonKey &&
+  !supabaseUrl.includes('your-project') &&
+  !supabaseAnonKey.includes('your-anon-key')
 );
 
-// Create Supabase Client (safe fallback if credentials are not yet set)
-export const supabase = isSupabaseConfigured
-  ? createClient(supabaseUrl, supabaseAnonKey)
-  : createClient(
-      supabaseUrl || 'https://shmxekngdxrjsdemjhsj.supabase.co/rest/v1/',
-      supabaseAnonKey || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNobXhla25nZHhyanNkZW1qaHNqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTA1NTczOTYsImV4cCI6MjEwNjEzMzM5Nn0.Avo4BBV4rMoqKbJIfadiLoiucWeHW3kQUxTubMxh9cI'
-    );
+// Create Supabase Client instance
+export const supabase = createClient(
+  supabaseUrl || 'https://placeholder.supabase.co',
+  supabaseAnonKey || 'placeholder-key'
+);
+
+/**
+ * Health check to test live connectivity and database tables
+ */
+export async function checkSupabaseConnection(): Promise<{
+  connected: boolean;
+  projectUrl: string;
+  tables: {
+    projects: boolean;
+    volunteers: boolean;
+    messages: boolean;
+  };
+  error?: string;
+}> {
+  if (!isSupabaseConfigured) {
+    return {
+      connected: false,
+      projectUrl: supabaseUrl,
+      tables: { projects: false, volunteers: false, messages: false },
+      error: 'Supabase credentials are not configured.'
+    };
+  }
+
+  try {
+    const [projRes, volRes, msgRes] = await Promise.all([
+      supabase.from('projects').select('count', { count: 'exact', head: true }),
+      supabase.from('volunteer_submissions').select('count', { count: 'exact', head: true }),
+      supabase.from('contact_messages').select('count', { count: 'exact', head: true })
+    ]);
+
+    const projectsOk = !projRes.error;
+    const volunteersOk = !volRes.error;
+    const messagesOk = !msgRes.error;
+    const isAnyWorking = projectsOk || volunteersOk || messagesOk;
+
+    return {
+      connected: isAnyWorking,
+      projectUrl: supabaseUrl,
+      tables: {
+        projects: projectsOk,
+        volunteers: volunteersOk,
+        messages: messagesOk
+      },
+      error: !isAnyWorking ? (projRes.error?.message || volRes.error?.message || 'Connection test failed') : undefined
+    };
+  } catch (err: any) {
+    return {
+      connected: false,
+      projectUrl: supabaseUrl,
+      tables: { projects: false, volunteers: false, messages: false },
+      error: err.message || 'Network error connecting to Supabase'
+    };
+  }
+}
 
 /**
  * Submit volunteer registration to Supabase table `volunteer_submissions`

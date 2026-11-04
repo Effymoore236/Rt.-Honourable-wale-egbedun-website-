@@ -14,11 +14,13 @@ import {
   CampaignSettings,
   OdoOtinCommunity,
   BiographyData,
-  BiographyTimelineMilestone
+  BiographyTimelineMilestone,
+  OnePageManifesto
 } from '../types';
 import {
   INITIAL_SETTINGS,
   INITIAL_MANIFESTO_PILLARS,
+  INITIAL_ONE_PAGE_MANIFESTO,
   INITIAL_PROJECTS,
   INITIAL_BLOG_POSTS,
   INITIAL_VOLUNTEERS,
@@ -74,10 +76,12 @@ interface CampaignContextType {
   volunteers: VolunteerSubmission[];
   contactMessages: ContactMessage[];
   manifestoPillars: ManifestoPillar[];
+  onePageManifesto: OnePageManifesto;
   galleryItems: GalleryItem[];
   subscribers: string[];
   
   // Actions
+  updateOnePageManifesto: (data: Partial<OnePageManifesto>) => void;
   updateBiography: (newBio: Partial<BiographyData>) => void;
   addTimelineMilestone: (m: BiographyTimelineMilestone) => void;
   updateTimelineMilestone: (index: number, m: BiographyTimelineMilestone) => void;
@@ -116,7 +120,7 @@ interface CampaignContextType {
 
 const CampaignContext = createContext<CampaignContextType | undefined>(undefined);
 
-const STORAGE_KEY = 'egbedun_campaign_data_v2';
+const STORAGE_KEY = 'egbedun_campaign_data_v3';
 
 export const CampaignProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [currentPage, setCurrentPage] = useState<AppPage>('home');
@@ -180,6 +184,24 @@ export const CampaignProvider: React.FC<{ children: ReactNode }> = ({ children }
   });
 
   const [manifestoPillars] = useState<ManifestoPillar[]>(INITIAL_MANIFESTO_PILLARS);
+  
+  const [onePageManifesto, setOnePageManifesto] = useState<OnePageManifesto>(() => {
+    try {
+      const saved = localStorage.getItem(`${STORAGE_KEY}_one_page_manifesto`);
+      return saved ? JSON.parse(saved) : INITIAL_ONE_PAGE_MANIFESTO;
+    } catch {
+      return INITIAL_ONE_PAGE_MANIFESTO;
+    }
+  });
+
+  const updateOnePageManifesto = (data: Partial<OnePageManifesto>) => {
+    setOnePageManifesto((prev) => {
+      const updated = { ...prev, ...data };
+      localStorage.setItem(`${STORAGE_KEY}_one_page_manifesto`, JSON.stringify(updated));
+      return updated;
+    });
+    showToast('One-page manifesto updated successfully.', 'success');
+  };
   
   const [biography, setBiography] = useState<BiographyData>(() => {
     try {
@@ -631,8 +653,10 @@ export const CampaignProvider: React.FC<{ children: ReactNode }> = ({ children }
         volunteers,
         contactMessages,
         manifestoPillars,
+        onePageManifesto,
         galleryItems,
         subscribers,
+        updateOnePageManifesto,
         updateBiography,
         addTimelineMilestone,
         updateTimelineMilestone,

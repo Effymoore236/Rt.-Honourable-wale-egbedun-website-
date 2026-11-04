@@ -6,8 +6,28 @@ import {
   ManifestoPillar,
   GalleryItem,
   CampaignSettings,
-  BiographyData
+  BiographyData,
+  OnePageManifesto
 } from '../types';
+import { REAL_EGBEDUN_ACHIEVEMENTS } from './realAchievements';
+
+export const INITIAL_ONE_PAGE_MANIFESTO: OnePageManifesto = {
+  title: "The People's Agenda: 2027–2031 Policy Blueprint",
+  subtitle: 'A single-page, action-focused contract for the continuous growth, education, infrastructure, and empowerment of all 16 communities of Odo-Otin State Constituency.',
+  versionDate: 'November 2026 Edition',
+  fileType: 'image',
+  fileUrl: '/src/assets/images/hon_adewale_egbedun_portrait_1790568774499.jpg',
+  fileName: 'Rt_Hon_Adewale_Egbedun_One_Page_Manifesto.jpg',
+  summaryHighlights: [
+    'Complete asphalt networking of rural agricultural feeder roads connecting all 16 communities to commercial hubs.',
+    '24/7 Primary Healthcare modernization with maternal-child care subsidies and doctors-on-wheels outreaches.',
+    'Solar-powered STEM e-learning computer labs across public secondary schools and annual student bursary funds.',
+    'Youth Innovation & Artisanal Startup Grants providing capital kits for over 500 certified entrepreneurs yearly.',
+    'Subsidized mechanized agriculture with community tractors, solar boreholes, and grain preservation infrastructure.'
+  ],
+  candidateStatement: 'This one-page manifesto represents our firm and unshakeable bond with the people of Odo-Otin. We commit ourselves to continuous, accountable, and high-impact service that leaves no community behind.',
+  enableDownload: true
+};
 
 export const INITIAL_SETTINGS: CampaignSettings = {
   candidateName: 'Rt. Hon. Adewale Egbedun',
@@ -198,7 +218,9 @@ export const INITIAL_MANIFESTO_PILLARS: ManifestoPillar[] = [
   }
 ];
 
-export const INITIAL_PROJECTS: Project[] = [
+export const INITIAL_PROJECTS: Project[] = REAL_EGBEDUN_ACHIEVEMENTS;
+
+export const LEGACY_PROJECTS: Project[] = [
   {
     id: 'proj-01',
     title: 'Reconstruction of Okuku - Ijabe Inter-Town Link Road',

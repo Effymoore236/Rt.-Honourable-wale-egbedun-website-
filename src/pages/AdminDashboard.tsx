@@ -46,8 +46,12 @@ import {
   Award,
   GraduationCap,
   Landmark,
-  Heart
+  Heart,
+  Database,
+  FileText,
+  Upload
 } from 'lucide-react';
+import { checkSupabaseConnection, isSupabaseConfigured, supabaseUrl } from '../lib/supabase';
 
 export const AdminDashboard: React.FC = () => {
   const {
@@ -81,6 +85,8 @@ export const AdminDashboard: React.FC = () => {
     contactMessages,
     markMessageRead,
     deleteContactMessage,
+    onePageManifesto,
+    updateOnePageManifesto,
     resetToDefaults,
     showToast,
     setCurrentPage
@@ -92,7 +98,7 @@ export const AdminDashboard: React.FC = () => {
 
   // Active admin tab
   const [activeTab, setActiveTab] = useState<
-    'overview' | 'biography' | 'projects' | 'gallery' | 'posts' | 'volunteers' | 'messages' | 'settings'
+    'overview' | 'manifesto' | 'biography' | 'projects' | 'gallery' | 'volunteers' | 'messages' | 'settings'
   >('overview');
 
   // Biography editable form state
@@ -102,10 +108,49 @@ export const AdminDashboard: React.FC = () => {
   const [newMileTitle, setNewMileTitle] = useState('');
   const [newMileDesc, setNewMileDesc] = useState('');
 
+  // Supabase Live Connectivity State
+  const [supabaseStatus, setSupabaseStatus] = useState<{
+    checking: boolean;
+    connected: boolean;
+    projectUrl: string;
+    tables?: { projects: boolean; volunteers: boolean; messages: boolean };
+    error?: string;
+  }>({
+    checking: true,
+    connected: false,
+    projectUrl: supabaseUrl
+  });
+
+  const testSupabase = async () => {
+    setSupabaseStatus((prev) => ({ ...prev, checking: true, error: undefined }));
+    const res = await checkSupabaseConnection();
+    setSupabaseStatus({
+      checking: false,
+      connected: res.connected,
+      projectUrl: res.projectUrl,
+      tables: res.tables,
+      error: res.error
+    });
+  };
+
+  useEffect(() => {
+    if (isAdminLoggedIn) {
+      testSupabase();
+    }
+  }, [isAdminLoggedIn]);
+
   // Keep bioForm in sync if biography changes externally
   useEffect(() => {
     setBioForm(biography);
   }, [biography]);
+
+  // Manifesto Editor Form State
+  const [manifestoForm, setManifestoForm] = useState(onePageManifesto);
+  const [newHighlightText, setNewHighlightText] = useState('');
+
+  useEffect(() => {
+    setManifestoForm(onePageManifesto);
+  }, [onePageManifesto]);
 
   // Project creation & editing state
   const [isAddingProject, setIsAddingProject] = useState(false);
@@ -462,13 +507,32 @@ export const AdminDashboard: React.FC = () => {
               <Shield className="w-6 h-6" />
             </div>
             <div>
-              <div className="flex items-center gap-2">
+              <div className="flex flex-wrap items-center gap-2">
                 <h1 className="text-xl font-bold font-display text-stone-950">
                   Welcome, Rt. Hon. Adewale Egbedun & Team
                 </h1>
                 <span className="text-[10px] font-bold bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded">
                   Live Operations
                 </span>
+                {supabaseStatus.connected ? (
+                  <span
+                    className="inline-flex items-center gap-1.5 text-[10px] font-bold bg-emerald-50 text-emerald-800 border border-emerald-300 px-2.5 py-0.5 rounded-full shadow-2xs"
+                    title={`Connected to Supabase PostgreSQL at ${supabaseStatus.projectUrl}`}
+                  >
+                    <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+                    <Database className="w-3 h-3 text-emerald-600" />
+                    <span>Supabase: Connected</span>
+                  </span>
+                ) : supabaseStatus.checking ? (
+                  <span className="inline-flex items-center gap-1 text-[10px] font-bold bg-amber-50 text-amber-800 border border-amber-300 px-2 py-0.5 rounded-full">
+                    <RefreshCw className="w-2.5 h-2.5 animate-spin" />
+                    <span>Supabase: Checking...</span>
+                  </span>
+                ) : (
+                  <span className="inline-flex items-center gap-1 text-[10px] font-bold bg-stone-100 text-stone-600 border border-stone-300 px-2 py-0.5 rounded-full">
+                    <span>Supabase: Offline</span>
+                  </span>
+                )}
               </div>
               <p className="text-xs text-stone-500">
                 Odo-Otin State Constituency 2027 Re-election Management Console
@@ -505,10 +569,10 @@ export const AdminDashboard: React.FC = () => {
         <div className="flex flex-wrap gap-1.5 p-1.5 bg-white rounded-xl border border-stone-200 shadow-xs">
           {[
             { id: 'overview', label: 'Overview', icon: LayoutDashboard },
+            { id: 'manifesto', label: 'Edit Manifesto', icon: FileText },
             { id: 'biography', label: 'Edit Biography', icon: UserCheck },
             { id: 'projects', label: `Projects (${projects.length})`, icon: Building2 },
             { id: 'gallery', label: `Pictures (${galleryItems.length})`, icon: ImageIcon },
-            { id: 'posts', label: `News & Updates (${blogPosts.length})`, icon: BookOpen },
             { id: 'volunteers', label: `Volunteers (${volunteers.length})`, icon: Users },
             { id: 'messages', label: `Messages (${contactMessages.length})`, icon: Mail },
             { id: 'settings', label: 'Settings', icon: Settings }
@@ -575,13 +639,13 @@ export const AdminDashboard: React.FC = () => {
 
               <div className="bg-white p-5 rounded-xl border border-stone-200 shadow-2xs">
                 <span className="text-[11px] font-semibold text-stone-500 uppercase tracking-wider block">
-                  Published Bulletins
+                  Total Interventions
                 </span>
-                <div className="text-2xl sm:text-3xl font-bold font-display text-stone-900 tabular-nums mt-1">
-                  {blogPosts.length}
+                <div className="text-2xl sm:text-3xl font-bold font-display text-emerald-700 tabular-nums mt-1">
+                  {projects.length}
                 </div>
                 <span className="text-[10px] text-stone-500">
-                  News & plenary dispatches
+                  Documented since 2023
                 </span>
               </div>
             </div>
@@ -620,15 +684,390 @@ export const AdminDashboard: React.FC = () => {
                 </button>
 
                 <button
-                  onClick={() => { setActiveTab('posts'); setIsAddingPost(true); }}
-                  className="p-4 rounded-xl border border-stone-200 bg-stone-50 hover:bg-rose-50 hover:border-rose-300 transition-all cursor-pointer group"
+                  onClick={() => { setActiveTab('manifesto'); }}
+                  className="p-4 rounded-xl border border-stone-200 bg-stone-50 hover:bg-amber-50 hover:border-amber-300 transition-all cursor-pointer group"
                 >
-                  <BookOpen className="w-5 h-5 text-rose-600 mb-2 group-hover:scale-110 transition-transform" />
-                  <div className="font-bold text-sm text-stone-900">Add News & Updates</div>
-                  <p className="text-xs text-stone-500 mt-1">Publish latest press releases and legislative announcements.</p>
+                  <FileText className="w-5 h-5 text-amber-600 mb-2 group-hover:scale-110 transition-transform" />
+                  <div className="font-bold text-sm text-stone-900">Edit Manifesto</div>
+                  <p className="text-xs text-stone-500 mt-1">Upload and customize your official one-page manifesto.</p>
                 </button>
               </div>
             </div>
+          </div>
+        )}
+
+        {/* TAB: EDIT MANIFESTO */}
+        {activeTab === 'manifesto' && (
+          <div className="bg-white p-6 sm:p-8 rounded-2xl border border-stone-200 shadow-xs space-y-8">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-stone-200 pb-4">
+              <div>
+                <h2 className="text-xl font-bold text-stone-950 font-display flex items-center gap-2">
+                  <span>Edit One-Page Manifesto</span>
+                  <span className="text-[10px] font-bold bg-amber-100 text-amber-900 border border-amber-300 px-2 py-0.5 rounded-full">
+                    2027–2031 Blueprint
+                  </span>
+                </h2>
+                <p className="text-xs text-stone-500 mt-0.5">
+                  Upload your one-page manifesto document (image or PDF), update key commitments, and customize candidate remarks.
+                </p>
+              </div>
+
+              <div className="flex items-center gap-3">
+                <button
+                  onClick={() => { setCurrentPage('manifesto'); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
+                  className="px-3.5 py-2 text-xs font-semibold text-stone-700 bg-stone-100 hover:bg-stone-200 rounded-lg flex items-center gap-1.5 transition-colors cursor-pointer"
+                >
+                  <ExternalLink className="w-3.5 h-3.5" />
+                  <span>View Public Manifesto Page</span>
+                </button>
+                <button
+                  onClick={() => {
+                    updateOnePageManifesto(manifestoForm);
+                  }}
+                  className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded-lg flex items-center gap-1.5 transition-colors shadow-xs cursor-pointer"
+                >
+                  <Save className="w-3.5 h-3.5 text-amber-300" />
+                  <span>Save Manifesto</span>
+                </button>
+              </div>
+            </div>
+
+            <form
+              onSubmit={(e) => {
+                e.preventDefault();
+                updateOnePageManifesto(manifestoForm);
+              }}
+              className="space-y-8 text-xs"
+            >
+              {/* SECTION 1: MANIFESTO FILE UPLOAD & PREVIEW */}
+              <div className="p-5 sm:p-6 rounded-xl border border-stone-200 bg-stone-50 space-y-4">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                  <div>
+                    <h3 className="text-sm font-bold text-stone-900 uppercase tracking-wider flex items-center gap-2">
+                      <Upload className="w-4 h-4 text-amber-600" />
+                      <span>One-Page Manifesto File (Upload or Paste Link)</span>
+                    </h3>
+                    <p className="text-xs text-stone-500">
+                      Upload your high-resolution manifesto image (JPG, PNG) or document PDF to display directly to constituents.
+                    </p>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start pt-2">
+                  {/* File Upload / URL controls (7 cols) */}
+                  <div className="lg:col-span-7 space-y-4">
+                    {/* Direct Local File Picker */}
+                    <div className="border-2 border-dashed border-stone-300 hover:border-amber-400 bg-white rounded-xl p-5 text-center transition-colors">
+                      <Upload className="w-8 h-8 text-amber-600 mx-auto mb-2" />
+                      <p className="text-xs font-bold text-stone-800">
+                        Choose a local image or PDF from your device
+                      </p>
+                      <p className="text-[11px] text-stone-500 mb-3">
+                        Recommended: PNG, JPG, or PDF (High Resolution One-Page layout)
+                      </p>
+                      <label className="inline-flex items-center gap-2 px-4 py-2 bg-amber-400 hover:bg-amber-300 text-stone-950 font-bold text-xs rounded-lg cursor-pointer transition-colors shadow-xs">
+                        <span>Select File from Computer / Phone</span>
+                        <input
+                          type="file"
+                          accept="image/*,application/pdf"
+                          className="hidden"
+                          onChange={(e) => {
+                            const file = e.target.files?.[0];
+                            if (file) {
+                              const isPdf = file.type === 'application/pdf' || file.name.endsWith('.pdf');
+                              const reader = new FileReader();
+                              reader.onload = () => {
+                                const result = reader.result as string;
+                                setManifestoForm((prev) => ({
+                                  ...prev,
+                                  fileUrl: result,
+                                  fileName: file.name,
+                                  fileType: isPdf ? 'pdf' : 'image'
+                                }));
+                                showToast(`Loaded "${file.name}" ready to save.`, 'info');
+                              };
+                              reader.readAsDataURL(file);
+                            }
+                          }}
+                        />
+                      </label>
+                    </div>
+
+                    {/* Or URL link input */}
+                    <div>
+                      <label className="block text-stone-700 font-semibold mb-1">
+                        Or provide Image / PDF Web URL
+                      </label>
+                      <div className="flex gap-2">
+                        <input
+                          type="text"
+                          placeholder="https://... or /src/assets/..."
+                          value={manifestoForm.fileUrl}
+                          onChange={(e) => {
+                            const val = e.target.value;
+                            const isPdf = val.toLowerCase().endsWith('.pdf');
+                            setManifestoForm({
+                              ...manifestoForm,
+                              fileUrl: val,
+                              fileType: isPdf ? 'pdf' : 'image'
+                            });
+                          }}
+                          className="flex-1 px-3 py-2 bg-white rounded-lg border border-stone-300 font-mono text-[11px]"
+                        />
+                        {manifestoForm.fileUrl && (
+                          <button
+                            type="button"
+                            onClick={() => setManifestoForm({ ...manifestoForm, fileUrl: '', fileName: '', fileType: 'none' })}
+                            className="px-3 py-2 bg-stone-200 hover:bg-rose-100 hover:text-rose-700 text-stone-700 font-bold rounded-lg cursor-pointer"
+                          >
+                            Clear
+                          </button>
+                        )}
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                      <div>
+                        <label className="block text-stone-700 font-semibold mb-1">File Format</label>
+                        <select
+                          value={manifestoForm.fileType}
+                          onChange={(e) => setManifestoForm({ ...manifestoForm, fileType: e.target.value as any })}
+                          className="w-full px-3 py-2 bg-white rounded-lg border border-stone-300"
+                        >
+                          <option value="image">Image (JPG, PNG, WEBP)</option>
+                          <option value="pdf">Document (PDF)</option>
+                          <option value="none">No File Uploaded</option>
+                        </select>
+                      </div>
+
+                      <div>
+                        <label className="block text-stone-700 font-semibold mb-1">Document File Name</label>
+                        <input
+                          type="text"
+                          value={manifestoForm.fileName || ''}
+                          onChange={(e) => setManifestoForm({ ...manifestoForm, fileName: e.target.value })}
+                          placeholder="e.g. Egbedun_2027_Manifesto.pdf"
+                          className="w-full px-3 py-2 bg-white rounded-lg border border-stone-300"
+                        />
+                      </div>
+                    </div>
+
+                    <div className="flex items-center gap-2 pt-1">
+                      <input
+                        type="checkbox"
+                        id="enableDownloadCheckbox"
+                        checked={manifestoForm.enableDownload}
+                        onChange={(e) => setManifestoForm({ ...manifestoForm, enableDownload: e.target.checked })}
+                        className="w-4 h-4 rounded text-amber-500 focus:ring-amber-400"
+                      />
+                      <label htmlFor="enableDownloadCheckbox" className="text-stone-700 font-semibold cursor-pointer">
+                        Enable direct download button on the public website
+                      </label>
+                    </div>
+                  </div>
+
+                  {/* Live Visual Preview Box (5 cols) */}
+                  <div className="lg:col-span-5 bg-stone-900 rounded-xl p-4 text-white text-center flex flex-col justify-between min-h-[340px] border border-stone-800">
+                    <span className="text-[10px] font-mono font-bold text-amber-400 uppercase tracking-widest block text-left">
+                      Live Document Preview
+                    </span>
+
+                    <div className="my-auto py-2 flex items-center justify-center">
+                      {manifestoForm.fileUrl ? (
+                        manifestoForm.fileType === 'pdf' ? (
+                          <div className="p-6 text-center space-y-2">
+                            <FileText className="w-12 h-12 text-amber-400 mx-auto" />
+                            <p className="text-xs font-bold text-white">PDF Document Ready</p>
+                            <p className="text-[10px] text-stone-400 break-all">{manifestoForm.fileName || 'Manifesto.pdf'}</p>
+                          </div>
+                        ) : (
+                          <img
+                            src={manifestoForm.fileUrl}
+                            alt="Manifesto Preview"
+                            className="max-h-[260px] w-auto max-w-full rounded shadow-md object-contain mx-auto"
+                          />
+                        )
+                      ) : (
+                        <div className="text-stone-500 py-10 space-y-1">
+                          <FileText className="w-10 h-10 mx-auto opacity-30" />
+                          <p className="text-xs">No document preview available yet.</p>
+                        </div>
+                      )}
+                    </div>
+
+                    <div className="text-[11px] text-stone-400 border-t border-stone-800 pt-2 flex justify-between">
+                      <span>Status: {manifestoForm.fileUrl ? 'Ready to publish' : 'Empty'}</span>
+                      <span className="capitalize">{manifestoForm.fileType} format</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* SECTION 2: HEADLINES & DETAILS */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-stone-700 font-semibold mb-1">
+                    Manifesto Page Main Title *
+                  </label>
+                  <input
+                    type="text"
+                    value={manifestoForm.title}
+                    onChange={(e) => setManifestoForm({ ...manifestoForm, title: e.target.value })}
+                    className="w-full px-3 py-2 bg-stone-50 rounded-lg border border-stone-300 font-bold"
+                    required
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-stone-700 font-semibold mb-1">
+                    Version / Release Tag
+                  </label>
+                  <input
+                    type="text"
+                    value={manifestoForm.versionDate}
+                    onChange={(e) => setManifestoForm({ ...manifestoForm, versionDate: e.target.value })}
+                    placeholder="e.g. November 2026 Edition"
+                    className="w-full px-3 py-2 bg-stone-50 rounded-lg border border-stone-300 font-mono text-[11px]"
+                  />
+                </div>
+
+                <div className="sm:col-span-2">
+                  <label className="block text-stone-700 font-semibold mb-1">
+                    Manifesto Subtitle & Narrative Summary
+                  </label>
+                  <textarea
+                    rows={2}
+                    value={manifestoForm.subtitle}
+                    onChange={(e) => setManifestoForm({ ...manifestoForm, subtitle: e.target.value })}
+                    className="w-full px-3 py-2 bg-stone-50 rounded-lg border border-stone-300"
+                  />
+                </div>
+
+                <div className="sm:col-span-2">
+                  <label className="block text-stone-700 font-semibold mb-1">
+                    Candidate Statement / Direct Foreword
+                  </label>
+                  <textarea
+                    rows={3}
+                    value={manifestoForm.candidateStatement}
+                    onChange={(e) => setManifestoForm({ ...manifestoForm, candidateStatement: e.target.value })}
+                    className="w-full px-3 py-2 bg-stone-50 rounded-lg border border-stone-300 italic"
+                    placeholder="Candidate personal message to the electorate..."
+                  />
+                </div>
+              </div>
+
+              {/* SECTION 3: KEY PRIORITY BULLET HIGHLIGHTS */}
+              <div className="space-y-4 pt-4 border-t border-stone-200">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h3 className="text-sm font-bold text-stone-900 uppercase tracking-wider">
+                      Key Governance Commitments & Bullet Points ({manifestoForm.summaryHighlights.length})
+                    </h3>
+                    <p className="text-xs text-stone-500">
+                      These points appear alongside your uploaded document on the public page.
+                    </p>
+                  </div>
+                </div>
+
+                {/* Add new point row */}
+                <div className="flex gap-2">
+                  <input
+                    type="text"
+                    placeholder="Enter a new policy priority or commitment..."
+                    value={newHighlightText}
+                    onChange={(e) => setNewHighlightText(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') {
+                        e.preventDefault();
+                        if (newHighlightText.trim()) {
+                          setManifestoForm({
+                            ...manifestoForm,
+                            summaryHighlights: [...manifestoForm.summaryHighlights, newHighlightText.trim()]
+                          });
+                          setNewHighlightText('');
+                        }
+                      }
+                    }}
+                    className="flex-1 px-3 py-2 bg-stone-50 rounded-lg border border-stone-300"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (newHighlightText.trim()) {
+                        setManifestoForm({
+                          ...manifestoForm,
+                          summaryHighlights: [...manifestoForm.summaryHighlights, newHighlightText.trim()]
+                        });
+                        setNewHighlightText('');
+                      }
+                    }}
+                    className="px-4 py-2 bg-stone-900 hover:bg-stone-800 text-white font-bold rounded-lg flex items-center gap-1.5 cursor-pointer"
+                  >
+                    <Plus className="w-3.5 h-3.5 text-amber-400" />
+                    <span>Add Item</span>
+                  </button>
+                </div>
+
+                {/* Existing list */}
+                <div className="space-y-2">
+                  {manifestoForm.summaryHighlights.map((hl, idx) => (
+                    <div
+                      key={idx}
+                      className="flex items-center justify-between gap-3 p-3 bg-stone-50 rounded-xl border border-stone-200"
+                    >
+                      <div className="flex items-start gap-2.5 flex-1">
+                        <span className="w-5 h-5 rounded-full bg-amber-400 text-stone-950 font-bold flex items-center justify-center text-[10px] shrink-0 mt-0.5">
+                          {idx + 1}
+                        </span>
+                        <input
+                          type="text"
+                          value={hl}
+                          onChange={(e) => {
+                            const updated = [...manifestoForm.summaryHighlights];
+                            updated[idx] = e.target.value;
+                            setManifestoForm({ ...manifestoForm, summaryHighlights: updated });
+                          }}
+                          className="flex-1 bg-white px-2.5 py-1 rounded border border-stone-300 text-xs"
+                        />
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const updated = manifestoForm.summaryHighlights.filter((_, i) => i !== idx);
+                          setManifestoForm({ ...manifestoForm, summaryHighlights: updated });
+                        }}
+                        className="p-1.5 text-stone-400 hover:text-rose-600 rounded cursor-pointer"
+                        title="Delete highlight"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Bottom Action Button */}
+              <div className="pt-6 border-t border-stone-200 flex justify-end gap-3">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setManifestoForm(onePageManifesto);
+                    showToast('Manifesto form reset to last saved state.', 'info');
+                  }}
+                  className="px-4 py-2.5 bg-stone-100 hover:bg-stone-200 text-stone-700 font-semibold rounded-xl cursor-pointer"
+                >
+                  Discard Changes
+                </button>
+                <button
+                  type="submit"
+                  className="px-6 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl flex items-center gap-2 shadow-md cursor-pointer transition-colors"
+                >
+                  <Save className="w-4 h-4 text-amber-300" />
+                  <span>Save & Publish Manifesto</span>
+                </button>
+              </div>
+            </form>
           </div>
         )}
 
@@ -1603,205 +2042,7 @@ export const AdminDashboard: React.FC = () => {
           </div>
         )}
 
-        {/* TAB 5: NEWS & UPDATES */}
-        {activeTab === 'posts' && (
-          <div className="bg-white p-6 sm:p-8 rounded-2xl border border-stone-200 shadow-xs space-y-6">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-              <div>
-                <h2 className="text-xl font-bold text-stone-950 font-display">
-                  Press Releases & Legislative Dispatches
-                </h2>
-                <p className="text-xs text-stone-500">
-                  Publish campaign updates, speech transcripts, and legislative milestones.
-                </p>
-              </div>
 
-              <div className="flex items-center gap-3">
-                <button
-                  onClick={() => { setCurrentPage('blog'); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
-                  className="px-3.5 py-2 text-xs font-semibold text-stone-700 bg-stone-100 hover:bg-stone-200 rounded-lg flex items-center gap-1.5 transition-colors cursor-pointer"
-                >
-                  <ExternalLink className="w-3.5 h-3.5" />
-                  <span>View Public News Page</span>
-                </button>
-                <button
-                  onClick={() => {
-                    setEditingPost(null);
-                    setNewPostTitle('');
-                    setNewPostExcerpt('');
-                    setNewPostContent('');
-                    setIsAddingPost(!isAddingPost);
-                  }}
-                  className="px-4 py-2 bg-amber-400 hover:bg-amber-300 text-stone-950 text-xs font-bold rounded-lg flex items-center gap-1.5 transition-colors cursor-pointer"
-                >
-                  <Plus className="w-3.5 h-3.5" />
-                  <span>{isAddingPost ? 'Close Form' : 'Add News / Update'}</span>
-                </button>
-              </div>
-            </div>
-
-            {/* Add / Edit Blog Post Form */}
-            {isAddingPost && (
-              <form onSubmit={handleSavePost} className="p-6 bg-stone-50 rounded-xl border border-stone-300 shadow-inner space-y-4 text-xs">
-                <div className="flex items-center justify-between border-b border-stone-200 pb-2">
-                  <h3 className="text-xs font-bold text-stone-900 uppercase tracking-wider">
-                    {editingPost ? `Editing Article: ${editingPost.title}` : 'Draft New Press Bulletin'}
-                  </h3>
-                  <button
-                    type="button"
-                    onClick={() => { setIsAddingPost(false); setEditingPost(null); }}
-                    className="text-stone-400 hover:text-stone-700 cursor-pointer"
-                  >
-                    <X className="w-4 h-4" />
-                  </button>
-                </div>
-
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                  <div className="sm:col-span-2">
-                    <label className="block text-stone-700 font-semibold mb-1">Headline / Title *</label>
-                    <input
-                      type="text"
-                      value={newPostTitle}
-                      onChange={(e) => setNewPostTitle(e.target.value)}
-                      required
-                      placeholder="e.g. Speaker Egbedun Inaugurates Digital Learning Labs in Inisa"
-                      className="w-full px-3 py-2 bg-white rounded-lg border border-stone-300 font-bold"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-stone-700 font-semibold mb-1">Category</label>
-                    <select
-                      value={newPostCategory}
-                      onChange={(e) => setNewPostCategory(e.target.value as any)}
-                      className="w-full px-3 py-2 bg-white rounded-lg border border-stone-300 font-semibold"
-                    >
-                      <option value="Press Releases">Press Releases</option>
-                      <option value="Legislative Updates">Legislative Updates</option>
-                      <option value="Project Updates">Project Updates</option>
-                      <option value="Community News">Community News</option>
-                      <option value="Events & Announcements">Events & Announcements</option>
-                    </select>
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-stone-700 font-semibold mb-1">Author / Bylines</label>
-                    <input
-                      type="text"
-                      value={newPostAuthor}
-                      onChange={(e) => setNewPostAuthor(e.target.value)}
-                      className="w-full px-3 py-2 bg-white rounded-lg border border-stone-300"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-stone-700 font-semibold mb-1">Tags (Comma-separated)</label>
-                    <input
-                      type="text"
-                      value={newPostTags}
-                      onChange={(e) => setNewPostTags(e.target.value)}
-                      placeholder="Odo-Otin, Accord, Education"
-                      className="w-full px-3 py-2 bg-white rounded-lg border border-stone-300"
-                    />
-                  </div>
-                </div>
-
-                <div>
-                  <label className="block text-stone-700 font-semibold mb-1">Featured Image URL</label>
-                  <input
-                    type="text"
-                    value={newPostImage}
-                    onChange={(e) => setNewPostImage(e.target.value)}
-                    className="w-full px-3 py-2 bg-white rounded-lg border border-stone-300 font-mono text-[11px]"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-stone-700 font-semibold mb-1">Brief Excerpt *</label>
-                  <textarea
-                    rows={2}
-                    value={newPostExcerpt}
-                    onChange={(e) => setNewPostExcerpt(e.target.value)}
-                    required
-                    placeholder="Short summary for preview cards..."
-                    className="w-full px-3 py-2 bg-white rounded-lg border border-stone-300"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-stone-700 font-semibold mb-1">Full Article Body *</label>
-                  <textarea
-                    rows={6}
-                    value={newPostContent}
-                    onChange={(e) => setNewPostContent(e.target.value)}
-                    required
-                    placeholder="Write or paste the full press dispatch here..."
-                    className="w-full px-3 py-2 bg-white rounded-lg border border-stone-300"
-                  />
-                </div>
-
-                <div className="flex items-center gap-3 pt-2">
-                  <button
-                    type="submit"
-                    className="px-5 py-2.5 bg-stone-900 text-amber-300 hover:text-white font-bold rounded-lg cursor-pointer transition-colors shadow-xs"
-                  >
-                    {editingPost ? 'Update Bulletin Record' : 'Publish Bulletin Immediately'}
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => { setIsAddingPost(false); setEditingPost(null); }}
-                    className="px-4 py-2.5 bg-stone-200 text-stone-700 font-semibold rounded-lg hover:bg-stone-300 cursor-pointer"
-                  >
-                    Cancel
-                  </button>
-                </div>
-              </form>
-            )}
-
-            {/* List of articles */}
-            <div className="space-y-4">
-              {blogPosts.map((post) => (
-                <div key={post.id} className="p-4 rounded-xl border border-stone-200 bg-stone-50 flex flex-col sm:flex-row sm:items-center justify-between gap-4 text-xs">
-                  <div>
-                    <div className="flex items-center gap-2 mb-1">
-                      <span className="font-bold text-amber-700 bg-amber-100 px-2 py-0.5 rounded text-[10px]">
-                        {post.category}
-                      </span>
-                      <span className="text-stone-400">{post.date}</span>
-                      <span className="text-stone-400">· By {post.author}</span>
-                    </div>
-                    <h4 className="font-bold text-stone-900 text-sm">{post.title}</h4>
-                    <p className="text-stone-500 line-clamp-1 mt-0.5">{post.excerpt}</p>
-                    <div className="text-[11px] text-stone-400 mt-1">
-                      {post.comments.length} Comments received
-                    </div>
-                  </div>
-
-                  <div className="flex items-center gap-2 shrink-0">
-                    <button
-                      onClick={() => handleStartEditPost(post)}
-                      className="p-1.5 rounded bg-white border border-stone-300 text-stone-700 hover:text-amber-600 transition-colors cursor-pointer"
-                      title="Edit article"
-                    >
-                      <Edit2 className="w-3.5 h-3.5" />
-                    </button>
-                    <button
-                      onClick={() => {
-                        if (window.confirm(`Delete article "${post.title}"?`)) {
-                          deleteBlogPost(post.id);
-                        }
-                      }}
-                      className="p-1.5 rounded bg-white border border-stone-300 text-stone-500 hover:text-rose-600 transition-colors cursor-pointer"
-                      title="Delete post"
-                    >
-                      <Trash2 className="w-3.5 h-3.5" />
-                    </button>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
 
         {/* TAB 6: VOLUNTEERS */}
         {activeTab === 'volunteers' && (
@@ -2008,6 +2249,82 @@ export const AdminDashboard: React.FC = () => {
               }}
               className="space-y-6 text-xs max-w-2xl"
             >
+              {/* Supabase Live Cloud Database Status Card */}
+              <div className="p-4 sm:p-5 rounded-xl border border-stone-200 bg-stone-50/80 space-y-3.5">
+                <div className="flex flex-wrap items-center justify-between gap-2">
+                  <div className="flex items-center gap-2.5">
+                    <div className={`p-2 rounded-lg ${supabaseStatus.connected ? 'bg-emerald-600 text-white' : 'bg-stone-300 text-stone-700'}`}>
+                      <Database className="w-4 h-4" />
+                    </div>
+                    <div>
+                      <h3 className="text-xs font-bold text-stone-900 uppercase tracking-wider flex items-center gap-2">
+                        <span>Supabase PostgreSQL Cloud Database</span>
+                        {supabaseStatus.connected && (
+                          <span className="inline-flex items-center gap-1 text-[10px] font-bold bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded-full">
+                            <span className="w-1.5 h-1.5 rounded-full bg-emerald-600 animate-pulse" />
+                            Live & Synchronized
+                          </span>
+                        )}
+                      </h3>
+                      <p className="text-[11px] text-stone-500 font-mono mt-0.5 break-all">
+                        {supabaseStatus.projectUrl || 'https://shmxekngdxrjsdemjhsj.supabase.co'}
+                      </p>
+                    </div>
+                  </div>
+
+                  <button
+                    type="button"
+                    onClick={async () => {
+                      await testSupabase();
+                      showToast('Tested Supabase connection successfully.', 'info');
+                    }}
+                    disabled={supabaseStatus.checking}
+                    className="px-3 py-1.5 bg-white hover:bg-stone-100 border border-stone-300 rounded-lg text-[11px] font-bold text-stone-800 flex items-center gap-1.5 cursor-pointer shadow-2xs"
+                  >
+                    <RefreshCw className={`w-3 h-3 ${supabaseStatus.checking ? 'animate-spin text-amber-500' : 'text-stone-600'}`} />
+                    <span>{supabaseStatus.checking ? 'Testing...' : 'Test Connection'}</span>
+                  </button>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 pt-2 border-t border-stone-200">
+                  <div className="bg-white p-2.5 rounded-lg border border-stone-200 flex items-center justify-between">
+                    <div>
+                      <span className="text-[10px] uppercase font-bold text-stone-400 block">Table</span>
+                      <span className="font-mono text-xs font-bold text-stone-800">projects</span>
+                    </div>
+                    <span className="text-[10px] font-bold text-emerald-700 bg-emerald-50 border border-emerald-200 px-1.5 py-0.5 rounded">
+                      Active
+                    </span>
+                  </div>
+
+                  <div className="bg-white p-2.5 rounded-lg border border-stone-200 flex items-center justify-between">
+                    <div>
+                      <span className="text-[10px] uppercase font-bold text-stone-400 block">Table</span>
+                      <span className="font-mono text-xs font-bold text-stone-800">volunteers</span>
+                    </div>
+                    <span className="text-[10px] font-bold text-emerald-700 bg-emerald-50 border border-emerald-200 px-1.5 py-0.5 rounded">
+                      Active
+                    </span>
+                  </div>
+
+                  <div className="bg-white p-2.5 rounded-lg border border-stone-200 flex items-center justify-between">
+                    <div>
+                      <span className="text-[10px] uppercase font-bold text-stone-400 block">Table</span>
+                      <span className="font-mono text-xs font-bold text-stone-800">messages</span>
+                    </div>
+                    <span className="text-[10px] font-bold text-emerald-700 bg-emerald-50 border border-emerald-200 px-1.5 py-0.5 rounded">
+                      Active
+                    </span>
+                  </div>
+                </div>
+
+                {supabaseStatus.error && (
+                  <p className="text-[11px] text-rose-600 bg-rose-50 p-2 rounded border border-rose-200">
+                    Connection notice: {supabaseStatus.error}
+                  </p>
+                )}
+              </div>
+
               <div className="space-y-3">
                 <h3 className="text-xs font-bold text-stone-900 uppercase tracking-wider">
                   Contact Information

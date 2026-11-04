@@ -27,7 +27,6 @@ export const Navbar: React.FC = () => {
     { id: 'manifesto', label: 'Manifesto', icon: FileText },
     { id: 'projects', label: 'Projects', icon: Building2 },
     { id: 'gallery', label: 'Gallery', icon: ImageIcon },
-    { id: 'blog', label: 'News & Updates', icon: Newspaper },
     { id: 'volunteer', label: 'Volunteer', icon: HeartHandshake }
   ] as const;
 

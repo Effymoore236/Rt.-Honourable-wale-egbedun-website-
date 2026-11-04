@@ -2,41 +2,25 @@ import React, { useState } from 'react';
 import { useCampaign } from '../context/CampaignContext';
 import { AccordBadge } from '../components/common/AccordBadge';
 import {
-  GraduationCap,
-  HeartPulse,
-  Building2,
-  Cpu,
-  ShoppingBag,
-  Wheat,
-  ShieldCheck,
-  Crown,
   Download,
   Printer,
   CheckCircle,
   Play,
   Clock,
   Sparkles,
-  Target
+  Target,
+  FileText,
+  Eye,
+  ExternalLink,
+  ShieldCheck,
+  ChevronRight,
+  Maximize2
 } from 'lucide-react';
 
-const iconMap: Record<string, React.ElementType> = {
-  GraduationCap,
-  HeartPulse,
-  Building2,
-  Cpu,
-  ShoppingBag,
-  Wheat,
-  ShieldCheck,
-  Crown
-};
-
 export const ManifestoPage: React.FC = () => {
-  const { manifestoPillars, setIsPrintManifestoOpen } = useCampaign();
-  const [selectedPillarId, setSelectedPillarId] = useState<string>(manifestoPillars[0]?.id || 'pillar-1');
+  const { onePageManifesto, setIsPrintManifestoOpen, setCurrentPage } = useCampaign();
   const [isVideoPlaying, setIsVideoPlaying] = useState(false);
-
-  const currentPillar = manifestoPillars.find((p) => p.id === selectedPillarId) || manifestoPillars[0];
-  const CurrentIcon = currentPillar ? iconMap[currentPillar.iconName] || Building2 : Building2;
+  const [isFullscreenPreview, setIsFullscreenPreview] = useState(false);
 
   return (
     <div className="py-12 lg:py-16 bg-white text-left">
@@ -53,18 +37,30 @@ export const ManifestoPage: React.FC = () => {
               The People&apos;s Manifesto: Continuity & Progress
             </h1>
             <p className="text-base text-stone-600 mt-2 max-w-3xl">
-              An evidence-grounded blueprint for rural prosperity, modern learning, maternal health, 
-              youth digital careers, and food sovereignty across all 16 communities of Odo-Otin.
+              {onePageManifesto.subtitle || 
+                'An evidence-grounded blueprint for rural prosperity, modern learning, maternal health, youth digital careers, and food sovereignty across all 16 communities of Odo-Otin.'}
             </p>
           </div>
 
-          <div className="flex items-center gap-3 shrink-0 w-full sm:w-auto">
+          <div className="flex flex-wrap items-center gap-3 shrink-0 w-full sm:w-auto">
+            {onePageManifesto.fileUrl && onePageManifesto.enableDownload && (
+              <a
+                href={onePageManifesto.fileUrl}
+                download={onePageManifesto.fileName || 'Rt_Hon_Adewale_Egbedun_One_Page_Manifesto'}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-5 py-3.5 min-h-[48px] rounded-xl bg-emerald-700 hover:bg-emerald-800 text-white font-bold text-xs sm:text-sm shadow-md transition-all cursor-pointer border border-emerald-900"
+              >
+                <Download className="w-4 h-4 text-amber-300" />
+                <span>Download Manifesto ({onePageManifesto.fileType === 'pdf' ? 'PDF' : 'HD Image'})</span>
+              </a>
+            )}
             <button
               onClick={() => setIsPrintManifestoOpen(true)}
-              className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-5 py-3.5 min-h-[48px] rounded-xl bg-emerald-700 hover:bg-emerald-800 text-white font-bold text-xs sm:text-sm shadow-md transition-all cursor-pointer border border-emerald-900"
+              className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-5 py-3.5 min-h-[48px] rounded-xl bg-stone-900 hover:bg-stone-800 text-white font-bold text-xs sm:text-sm shadow-md transition-all cursor-pointer border border-stone-800"
             >
-              <Download className="w-4 h-4 text-amber-300" />
-              <span>Download & Print Full Manifesto PDF</span>
+              <Printer className="w-4 h-4 text-amber-400" />
+              <span>Print Official Manifesto</span>
             </button>
           </div>
         </div>
@@ -117,7 +113,7 @@ export const ManifestoPage: React.FC = () => {
                 &ldquo;Why Continuity in 2027 Matters for Every Home in Odo-Otin&rdquo;
               </h3>
               <p className="text-xs sm:text-sm text-stone-300 leading-relaxed">
-                Watch the Speaker explain the arithmetic and verifiable targets behind each manifesto pillar, 
+                Watch the Speaker explain the real commitments and verifiable targets behind our 2027 agenda, 
                 sharing personal commitments to market women, young innovators, and farmers across our constituency.
               </p>
               <div className="pt-2 flex items-center gap-4 text-xs text-stone-400">
@@ -141,13 +137,16 @@ export const ManifestoPage: React.FC = () => {
                   </p>
                   <button
                     onClick={() => setIsVideoPlaying(false)}
-                    className="mt-4 text-xs px-3 py-1 bg-stone-800 rounded border border-stone-700 text-stone-200 hover:text-white"
+                    className="mt-4 text-xs px-3 py-1 bg-stone-800 rounded border border-stone-700 text-stone-200 hover:text-white cursor-pointer"
                   >
                     Close Player
                   </button>
                 </div>
               ) : (
-                <div className="relative group cursor-pointer w-full h-full flex flex-col items-center justify-center text-center" onClick={() => setIsVideoPlaying(true)}>
+                <div
+                  className="relative group cursor-pointer w-full h-full flex flex-col items-center justify-center text-center"
+                  onClick={() => setIsVideoPlaying(true)}
+                >
                   <img
                     src="/src/assets/images/hon_adewale_egbedun_portrait_1790568774499.jpg"
                     alt="Speaker Egbedun Candidate Address"
@@ -166,138 +165,214 @@ export const ManifestoPage: React.FC = () => {
           </div>
         </div>
 
-        {/* Interactive 8 Pillars Explorer */}
-        <div className="space-y-8">
-          <div className="text-left">
-            <span className="text-xs font-bold text-amber-600 tracking-wider uppercase">
-              Interactive Policy Framework
-            </span>
-            <h2 className="text-2xl sm:text-3xl font-extrabold text-stone-950 tracking-tight mt-1 font-display">
-              Examine the 8 Pillars in Detail
-            </h2>
-            <p className="text-sm text-stone-600 mt-1">
-              Select a pillar below to inspect specific timelines, budget projections, and village-by-village deliverables.
-            </p>
+        {/* The One-Page Manifesto Section */}
+        <section className="space-y-8">
+          <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
+            <div>
+              <span className="text-xs font-bold text-amber-600 tracking-wider uppercase flex items-center gap-1.5">
+                <FileText className="w-3.5 h-3.5" />
+                <span>Official One-Page Policy Document</span>
+              </span>
+              <h2 className="text-2xl sm:text-3xl font-extrabold text-stone-950 tracking-tight mt-1 font-display">
+                {onePageManifesto.title || "The People's One-Page Manifesto"}
+              </h2>
+              <p className="text-sm text-stone-600 mt-1 max-w-2xl">
+                A concise, action-focused policy document outlining our governance priorities for the 2027–2031 legislative term.
+              </p>
+            </div>
+
+            <div className="flex items-center gap-2">
+              <span className="text-xs font-mono font-semibold px-3 py-1 rounded-full bg-amber-100 text-amber-900 border border-amber-300">
+                {onePageManifesto.versionDate || 'Active 2027 Blueprint'}
+              </span>
+            </div>
           </div>
 
-          {/* Interactive Tab Bar (allowed as interactive filter control) */}
-          <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-2 p-1.5 bg-stone-100 rounded-xl border border-stone-200">
-            {manifestoPillars.map((p) => {
-              const Icon = iconMap[p.iconName] || Building2;
-              const isSelected = p.id === selectedPillarId;
-              return (
-                <button
-                  key={p.id}
-                  onClick={() => setSelectedPillarId(p.id)}
-                  className={`p-3 rounded-lg text-left transition-all cursor-pointer flex flex-col justify-between ${
-                    isSelected
-                      ? 'bg-white shadow-xs border border-amber-300 text-stone-950'
-                      : 'text-stone-600 hover:text-stone-950 hover:bg-stone-200/50'
-                  }`}
-                >
-                  <div className="flex items-center justify-between mb-2">
-                    <span className="text-[10px] font-mono font-bold text-amber-700">
-                      {p.number}
-                    </span>
-                    <Icon className={`w-4 h-4 ${isSelected ? 'text-amber-600' : 'text-stone-400'}`} />
+          {/* Main One-Page Display Card */}
+          <div className="bg-stone-50 rounded-2xl border border-stone-200 overflow-hidden shadow-sm">
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-0">
+              
+              {/* Manifesto Document Visual Viewer (Left 7 Cols) */}
+              <div className="lg:col-span-7 p-6 sm:p-8 bg-stone-900 flex flex-col justify-between border-b lg:border-b-0 lg:border-r border-stone-800 relative">
+                <div className="flex items-center justify-between text-white text-xs mb-4">
+                  <div className="flex items-center gap-2">
+                    <FileText className="w-4 h-4 text-amber-400" />
+                    <span className="font-semibold">{onePageManifesto.fileName || 'Official One-Page Manifesto Document'}</span>
                   </div>
-                  <span className="text-[11px] font-bold leading-tight line-clamp-2">
-                    {p.title.split('&')[0]}
-                  </span>
-                </button>
-              );
-            })}
-          </div>
-
-          {/* Detailed Selected Pillar Presentation */}
-          {currentPillar && (
-            <div className="p-5 sm:p-10 rounded-2xl bg-stone-50 border border-stone-200 shadow-xs">
-              <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-                
-                {/* Left side: Overview & Key Numbers */}
-                <div className="lg:col-span-7 space-y-6">
-                  <div className="flex items-center gap-3">
-                    <div className="p-3 rounded-xl bg-amber-400 text-stone-950">
-                      <CurrentIcon className="w-6 h-6" />
-                    </div>
-                    <div>
-                      <span className="text-xs font-mono font-bold text-amber-700">
-                        PILLAR {currentPillar.number}
-                      </span>
-                      <h3 className="text-2xl font-extrabold text-stone-950 font-display">
-                        {currentPillar.title}
-                      </h3>
-                    </div>
-                  </div>
-
-                  <p className="text-sm sm:text-base font-medium text-stone-800 italic">
-                    &ldquo;{currentPillar.tagline}&rdquo;
-                  </p>
-
-                  <p className="text-xs sm:text-sm text-stone-600 leading-relaxed">
-                    {currentPillar.summary}
-                  </p>
-
-                  <div className="space-y-3 pt-2">
-                    <h4 className="text-xs font-bold text-stone-900 uppercase tracking-wider">
-                      Specific Measurable Targets (2027–2031)
-                    </h4>
-                    <div className="space-y-2">
-                      {currentPillar.targets.map((target, idx) => (
-                        <div key={idx} className="flex items-start gap-2.5 text-xs text-stone-700">
-                          <CheckCircle className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
-                          <span>{target}</span>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
+                  {onePageManifesto.fileUrl && (
+                    <button
+                      onClick={() => setIsFullscreenPreview(true)}
+                      className="inline-flex items-center gap-1 text-[11px] text-amber-300 hover:text-white transition-colors cursor-pointer bg-stone-800 px-2.5 py-1 rounded border border-stone-700"
+                    >
+                      <Maximize2 className="w-3 h-3" />
+                      <span>Zoom View</span>
+                    </button>
+                  )}
                 </div>
 
-                {/* Right side: Budget & Key Deliverables */}
-                <div className="lg:col-span-5 bg-white p-6 rounded-xl border border-stone-200 shadow-2xs space-y-5">
-                  <div className="border-b border-stone-100 pb-4">
-                    <span className="text-[11px] font-semibold text-stone-500 uppercase tracking-wider block">
-                      Estimated Capital Commitment
-                    </span>
-                    <div className="text-2xl font-extrabold text-amber-600 font-display tabular-nums mt-0.5">
-                      {currentPillar.budgetEstimate}
+                {/* Display File Preview */}
+                <div className="relative rounded-xl overflow-hidden bg-black border border-stone-800 flex items-center justify-center min-h-[460px] sm:min-h-[580px] shadow-inner group">
+                  {onePageManifesto.fileUrl ? (
+                    onePageManifesto.fileType === 'pdf' ? (
+                      <div className="w-full h-[580px] flex flex-col items-center justify-center p-6 text-center text-stone-300 space-y-4">
+                        <FileText className="w-16 h-16 text-amber-400 animate-pulse" />
+                        <div>
+                          <h4 className="text-base font-bold text-white">PDF Manifesto Document Loaded</h4>
+                          <p className="text-xs text-stone-400 mt-1 max-w-sm">
+                            The official PDF is available for viewing and direct high-resolution download.
+                          </p>
+                        </div>
+                        <div className="flex flex-wrap items-center justify-center gap-3 pt-2">
+                          <a
+                            href={onePageManifesto.fileUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="px-4 py-2 rounded-lg bg-amber-400 text-stone-950 font-bold text-xs flex items-center gap-2 hover:bg-amber-300 transition-colors"
+                          >
+                            <ExternalLink className="w-3.5 h-3.5" />
+                            <span>Open PDF in New Window</span>
+                          </a>
+                          <a
+                            href={onePageManifesto.fileUrl}
+                            download={onePageManifesto.fileName || 'Manifesto.pdf'}
+                            className="px-4 py-2 rounded-lg bg-stone-800 text-white font-semibold text-xs border border-stone-700 hover:bg-stone-700 transition-colors flex items-center gap-2"
+                          >
+                            <Download className="w-3.5 h-3.5 text-amber-400" />
+                            <span>Save PDF</span>
+                          </a>
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center bg-stone-950 p-2 sm:p-4">
+                        <img
+                          src={onePageManifesto.fileUrl}
+                          alt="Rt. Hon. Adewale Egbedun One Page Manifesto"
+                          className="max-h-[620px] w-auto max-w-full object-contain rounded shadow-2xl cursor-pointer transition-transform duration-300 group-hover:scale-[1.01]"
+                          onClick={() => setIsFullscreenPreview(true)}
+                          referrerPolicy="no-referrer"
+                        />
+                      </div>
+                    )
+                  ) : (
+                    <div className="text-center p-8 text-stone-400 space-y-3">
+                      <FileText className="w-12 h-12 text-stone-600 mx-auto" />
+                      <p className="text-sm font-semibold text-stone-300">No Manifesto File Uploaded Yet</p>
+                      <p className="text-xs text-stone-500 max-w-xs">
+                        Use the Campaign Admin Console to upload your one-page manifesto image or PDF.
+                      </p>
                     </div>
-                    <span className="text-[11px] text-stone-500">
-                      Timeline: {currentPillar.timeline} (Phased Appropriation)
-                    </span>
-                  </div>
+                  )}
+                </div>
 
+                <div className="mt-4 flex flex-wrap items-center justify-between text-[11px] text-stone-400 pt-2 border-t border-stone-800">
+                  <span>Document Status: Official Verified Release</span>
+                  <span>Constituency: Odo-Otin State Constituency</span>
+                </div>
+              </div>
+
+              {/* Right Side: Key Highlights & Candidate Pledge (Right 5 Cols) */}
+              <div className="lg:col-span-5 p-6 sm:p-8 flex flex-col justify-between space-y-6">
+                <div className="space-y-6">
                   <div>
-                    <h5 className="text-xs font-bold text-stone-900 uppercase tracking-wider mb-3">
-                      Priority Deliverables
-                    </h5>
-                    <ul className="space-y-2.5 text-xs text-stone-700">
-                      {currentPillar.keyDeliverables.map((deliv, i) => (
-                        <li key={i} className="flex items-start gap-2 p-2.5 rounded-lg bg-stone-50 border border-stone-100">
-                          <span className="w-1.5 h-1.5 rounded-full bg-amber-500 mt-1.5 shrink-0" />
-                          <span>{deliv}</span>
-                        </li>
-                      ))}
-                    </ul>
+                    <span className="text-[11px] font-bold text-amber-700 uppercase tracking-widest block mb-1">
+                      Priority Action Areas
+                    </span>
+                    <h3 className="text-xl font-extrabold text-stone-950 font-display">
+                      Key Governance Commitments
+                    </h3>
+                    <p className="text-xs text-stone-600 mt-1">
+                      Direct focus areas targeted for legislative intervention and grassroots delivery.
+                    </p>
                   </div>
 
-                  <div className="pt-2">
-                    <button
-                      onClick={() => setIsPrintManifestoOpen(true)}
-                      className="w-full py-2.5 rounded-lg bg-stone-900 hover:bg-stone-800 text-white text-xs font-semibold flex items-center justify-center gap-2 transition-colors cursor-pointer"
-                    >
-                      <Printer className="w-3.5 h-3.5 text-amber-400" />
-                      <span>Print Document with Official Seal</span>
-                    </button>
+                  {/* Highlights Bullet List */}
+                  <div className="space-y-3">
+                    {onePageManifesto.summaryHighlights && onePageManifesto.summaryHighlights.length > 0 ? (
+                      onePageManifesto.summaryHighlights.map((highlight, idx) => (
+                        <div
+                          key={idx}
+                          className="flex items-start gap-3 p-3.5 rounded-xl bg-white border border-stone-200/80 shadow-2xs text-xs text-stone-800 leading-relaxed"
+                        >
+                          <span className="flex items-center justify-center w-5 h-5 rounded-full bg-emerald-100 text-emerald-800 shrink-0 mt-0.5 font-bold text-[10px]">
+                            {idx + 1}
+                          </span>
+                          <span>{highlight}</span>
+                        </div>
+                      ))
+                    ) : (
+                      <p className="text-xs text-stone-500 italic">No summary points entered yet.</p>
+                    )}
                   </div>
+
+                  {/* Candidate Statement Quote */}
+                  {onePageManifesto.candidateStatement && (
+                    <div className="p-4 rounded-xl bg-amber-50/80 border border-amber-200 text-xs text-stone-800 leading-relaxed italic space-y-2">
+                      <p>&ldquo;{onePageManifesto.candidateStatement}&rdquo;</p>
+                      <div className="text-right font-bold text-stone-900 not-italic text-[11px]">
+                        — Rt. Hon. Adewale Egbedun
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                {/* Download and Share CTA */}
+                <div className="pt-4 border-t border-stone-200 space-y-3">
+                  {onePageManifesto.fileUrl && (
+                    <a
+                      href={onePageManifesto.fileUrl}
+                      download={onePageManifesto.fileName || 'Rt_Hon_Adewale_Egbedun_One_Page_Manifesto'}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="w-full py-3 px-4 rounded-xl bg-amber-400 hover:bg-amber-300 text-stone-950 font-bold text-xs flex items-center justify-center gap-2 shadow-sm transition-colors cursor-pointer"
+                    >
+                      <Download className="w-4 h-4" />
+                      <span>Download Full-Resolution Manifesto</span>
+                    </a>
+                  )}
+
+                  <button
+                    onClick={() => {
+                      setCurrentPage('volunteer');
+                      window.scrollTo({ top: 0, behavior: 'smooth' });
+                    }}
+                    className="w-full py-2.5 px-4 rounded-xl bg-white hover:bg-stone-100 border border-stone-300 text-stone-800 font-semibold text-xs flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
+                  >
+                    <span>Support This Agenda · Join as Volunteer</span>
+                    <ChevronRight className="w-3.5 h-3.5 text-stone-500" />
+                  </button>
                 </div>
 
               </div>
+
             </div>
-          )}
-        </div>
+          </div>
+        </section>
 
       </div>
+
+      {/* Fullscreen Zoom Lightbox Modal */}
+      {isFullscreenPreview && onePageManifesto.fileUrl && (
+        <div className="fixed inset-0 z-50 bg-black/90 backdrop-blur-sm flex flex-col items-center justify-center p-4">
+          <div className="w-full max-w-5xl flex items-center justify-between text-white pb-3">
+            <span className="text-xs font-semibold">{onePageManifesto.title}</span>
+            <button
+              onClick={() => setIsFullscreenPreview(false)}
+              className="px-3 py-1 bg-stone-800 text-stone-200 hover:text-white rounded text-xs border border-stone-700 cursor-pointer"
+            >
+              Close Preview
+            </button>
+          </div>
+          <div className="relative max-w-5xl max-h-[85vh] overflow-auto rounded-lg bg-stone-950 p-2">
+            <img
+              src={onePageManifesto.fileUrl}
+              alt="Manifesto Document Zoomed"
+              className="max-h-[80vh] w-auto mx-auto object-contain"
+              referrerPolicy="no-referrer"
+            />
+          </div>
+        </div>
+      )}
+
     </div>
   );
 };

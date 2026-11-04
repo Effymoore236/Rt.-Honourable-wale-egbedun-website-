@@ -1,10 +1,10 @@
 import React from 'react';
 import { useCampaign } from '../../context/CampaignContext';
 import { AccordBadge } from './AccordBadge';
-import { X, Printer, Download, Sparkles, CheckCircle2 } from 'lucide-react';
+import { X, Printer, Download, Sparkles, CheckCircle2, FileText } from 'lucide-react';
 
 export const ManifestoPrintModal: React.FC = () => {
-  const { isPrintManifestoOpen, setIsPrintManifestoOpen, manifestoPillars, settings } = useCampaign();
+  const { isPrintManifestoOpen, setIsPrintManifestoOpen, onePageManifesto, settings } = useCampaign();
 
   if (!isPrintManifestoOpen) return null;
 
@@ -20,7 +20,7 @@ export const ManifestoPrintModal: React.FC = () => {
         <div className="sticky top-0 z-30 bg-stone-900 text-white px-6 py-3.5 flex items-center justify-between no-print border-b border-stone-800">
           <div className="flex items-center gap-2 text-xs font-semibold">
             <span className="text-amber-400">Official Document:</span>
-            <span>2027–2031 Odo-Otin Manifesto (Print / PDF Mode)</span>
+            <span>2027–2031 Odo-Otin One-Page Manifesto (Print / PDF Mode)</span>
           </div>
 
           <div className="flex items-center gap-3">
@@ -71,62 +71,51 @@ export const ManifestoPrintModal: React.FC = () => {
           {/* Document Title */}
           <div className="text-center space-y-1">
             <h2 className="text-xl sm:text-2xl font-bold font-display uppercase tracking-tight text-stone-950">
-              OFFICIAL 2027 – 2031 CONSTITUENCY MANIFESTO
+              {onePageManifesto.title || 'OFFICIAL 2027 – 2031 CONSTITUENCY MANIFESTO'}
             </h2>
             <p className="text-xs text-stone-600 italic">
-              &ldquo;Consolidating Transformative Governance across All 16 Communities of Odo-Otin&rdquo;
+              {onePageManifesto.subtitle || 'Consolidating Transformative Governance across All 16 Communities of Odo-Otin'}
             </p>
           </div>
 
           {/* Candidate Commitment Foreword */}
           <div className="p-4 rounded-xl bg-stone-50 border border-stone-200 text-xs text-stone-700 leading-relaxed italic space-y-2">
             <p>
-              &ldquo;My good people of Odo-Otin, this manifesto is not a catalogue of hollow political promises. 
-              It is a binding social contract rooted in our verifiable first-term accomplishments. 
-              Over the past four years, we proved that Odo-Otin can command state-wide respect and direct developmental capital. 
-              With your mandate in February 2027, we shall execute these 8 pillars to completion.&rdquo;
+              &ldquo;{onePageManifesto.candidateStatement || 'My good people of Odo-Otin, this manifesto is a binding social contract rooted in our verifiable first-term accomplishments. Over the past four years, we proved that Odo-Otin can command state-wide respect and direct developmental progress. With your mandate, we shall fulfill our commitments to every community.'}&rdquo;
             </p>
             <div className="text-right font-bold text-stone-900 not-italic">
               — Rt. Hon. Adewale Egbedun (Speaker, Osun State House of Assembly)
             </div>
           </div>
 
-          {/* The 8 Pillars Detailed Breakdown */}
-          <div className="space-y-6">
+          {/* If an image was uploaded, show the one-page manifesto visual */}
+          {onePageManifesto.fileUrl && onePageManifesto.fileType !== 'pdf' && (
+            <div className="p-2 border border-stone-300 rounded-xl bg-stone-50 text-center">
+              <img
+                src={onePageManifesto.fileUrl}
+                alt="One-Page Manifesto Document"
+                className="max-h-[600px] w-auto mx-auto object-contain rounded"
+              />
+            </div>
+          )}
+
+          {/* Key Strategic Commitments */}
+          <div className="space-y-4">
             <h3 className="text-sm font-bold text-stone-900 uppercase tracking-wider border-b border-stone-200 pb-1">
-              THE 8 STRATEGIC PILLARS
+              KEY CONSTITUENCY COMMITMENTS
             </h3>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 text-xs">
-              {manifestoPillars.map((p) => (
-                <div key={p.id} className="p-4 rounded-xl border border-stone-200 space-y-2 bg-stone-50/50">
-                  <div className="flex items-center justify-between">
-                    <span className="font-mono font-bold text-amber-700 text-xs">
-                      PILLAR {p.number}
-                    </span>
-                    <span className="text-[10px] font-semibold text-stone-500">
-                      Est. {p.budgetEstimate}
-                    </span>
+            <div className="space-y-2.5 text-xs text-stone-800">
+              {onePageManifesto.summaryHighlights && onePageManifesto.summaryHighlights.length > 0 ? (
+                onePageManifesto.summaryHighlights.map((highlight, idx) => (
+                  <div key={idx} className="flex items-start gap-2.5 p-3 rounded-lg bg-stone-50 border border-stone-200">
+                    <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
+                    <span>{highlight}</span>
                   </div>
-
-                  <h4 className="font-bold text-stone-950 text-sm font-display">
-                    {p.title}
-                  </h4>
-
-                  <p className="text-stone-600 text-[11px] leading-relaxed">
-                    {p.summary}
-                  </p>
-
-                  <ul className="space-y-1 pt-1 text-stone-700 text-[11px]">
-                    {p.targets.slice(0, 3).map((t, idx) => (
-                      <li key={idx} className="flex items-start gap-1.5">
-                        <span className="text-amber-500 font-bold">›</span>
-                        <span>{t}</span>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              ))}
+                ))
+              ) : (
+                <p className="text-xs text-stone-500 italic">No summary points recorded.</p>
+              )}
             </div>
           </div>
 

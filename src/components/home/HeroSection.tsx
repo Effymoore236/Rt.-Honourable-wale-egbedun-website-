@@ -178,26 +178,6 @@ export const HeroSection: React.FC = () => {
             16 communities of Odo-Otin.
           </p>
 
-          {/* Key trust bullets */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2.5 max-w-3xl mx-auto text-xs text-stone-800 font-medium text-left">
-            <div className="flex items-center gap-2 bg-white/80 p-2.5 rounded-lg border border-stone-200">
-              <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
-              <span>42+ Projects Completed</span>
-            </div>
-            <div className="flex items-center gap-2 bg-white/80 p-2.5 rounded-lg border border-stone-200">
-              <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
-              <span>16/16 Communities Impacted</span>
-            </div>
-            <div className="flex items-center gap-2 bg-white/80 p-2.5 rounded-lg border border-stone-200">
-              <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
-              <span>Zero-Tolerance for Absence</span>
-            </div>
-            <div className="flex items-center gap-2 bg-white/80 p-2.5 rounded-lg border border-stone-200">
-              <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
-              <span>Consensus Assembly Speaker</span>
-            </div>
-          </div>
-
           {/* Primary Action Buttons with Emerald Green and Crimson Red */}
           <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-center gap-3 pt-2 max-w-xl mx-auto w-full">
             <button

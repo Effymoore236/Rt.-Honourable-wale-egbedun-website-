@@ -14,7 +14,8 @@ export type OdoOtinCommunity =
   | 'Ekusa'
   | 'Asi Asaba'
   | 'Ore'
-  | 'Oba Ojomu';
+  | 'Oba Ojomu'
+  | 'Constituency-Wide';
 
 export const ODO_OTIN_COMMUNITIES: OdoOtinCommunity[] = [
   'Okuku',
@@ -32,7 +33,8 @@ export const ODO_OTIN_COMMUNITIES: OdoOtinCommunity[] = [
   'Ekusa',
   'Asi Asaba',
   'Ore',
-  'Oba Ojomu'
+  'Oba Ojomu',
+  'Constituency-Wide'
 ];
 
 export type ProjectCategory =
@@ -42,7 +44,9 @@ export type ProjectCategory =
   | 'Water & Sanitation'
   | 'Rural Electrification & Solar'
   | 'Agriculture & Markets'
-  | 'Youth & Women Empowerment';
+  | 'Youth & Women Empowerment'
+  | 'Constituent Welfare & Support'
+  | 'Traditional Institutions & Peace';
 
 export type ProjectStatus = 'Completed' | 'Ongoing' | 'Planned';
 
@@ -136,6 +140,18 @@ export interface ContactMessage {
   replied: boolean;
 }
 
+export interface OnePageManifesto {
+  title: string;
+  subtitle: string;
+  versionDate: string;
+  fileType: 'image' | 'pdf' | 'none';
+  fileUrl: string;
+  fileName?: string;
+  summaryHighlights: string[];
+  candidateStatement: string;
+  enableDownload: boolean;
+}
+
 export interface ManifestoPillar {
   id: string;
   number: string;
@@ -144,7 +160,7 @@ export interface ManifestoPillar {
   iconName: string;
   summary: string;
   targets: string[];
-  budgetEstimate: string;
+  budgetEstimate?: string;
   timeline: string;
   keyDeliverables: string[];
 }
